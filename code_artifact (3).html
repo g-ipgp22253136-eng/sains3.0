@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小仙女的梦幻科学披萨店</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pizza: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                        },
+                        fairy: {
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f472b6',
+                            400: '#e879f9',
+                            500: '#ec4899',
+                        }
+                    },
+                    fontFamily: {
+                        cute: ['"ZCOOL KuaiLe"', 'cursive', 'sans-serif'],
+                        main: ['Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Nunito', 'ZCOOL KuaiLe', sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #ffedd5 50%, #e0e7ff 100%);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .cute-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+
+        /* 披萨盘与制作区样式 */
+        #pizza-board {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fde047 0%, #f97316 80%, #c2410c 100%);
+            box-shadow: 0 10px 25px rgba(234, 88, 12, 0.4), inset 0 0 15px rgba(255,255,255,0.6);
+            border: 12px solid #fdba74;
+        }
+        @media (min-width: 640px) {
+            #pizza-board {
+                width: 320px;
+                height: 320px;
+            }
+        }
+
+        /* 披萨面饼 */
+        .pizza-crust {
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fef08a 0%, #fcd34d 70%, #f59e0b 100%);
+            border: 8px dashed #d97706;
+            box-shadow: inset 0 0 20px rgba(180, 83, 9, 0.3);
+        }
+
+        /* 放在披萨上的配料小元素 */
+        .topping-on-pizza {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            filter: drop-shadow(0 4px 3px rgba(0,0,0,0.2));
+            font-size: 1.75rem;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .topping-on-pizza:hover {
+            transform: translate(-50%, -50%) scale(1.2) rotate(10deg);
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 浮动文字提示 */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+        .float-text {
+            animation: floatUp 1.2s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 pb-10 flex flex-col items-center">
+
+    <!-- 主视图容器 -->
+    <div class="w-full max-w-4xl px-3 sm:px-6 py-4">
+
+        <!-- 顶部标题与资源卡片 -->
+        <header class="bg-white/90 backdrop-blur-md rounded-3xl p-3 sm:p-4 shadow-xl border-4 border-pink-300 mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 flex items-center justify-center text-white text-2xl shadow-md transform -rotate-3">
+                    <i class="fa-solid fa-pizza-slice"></i>
+                </div>
+                <div>
+                    <h1 class="cute-font text-xl sm:text-2xl text-pink-600 drop-shadow">小仙女的梦幻科学披萨店</h1>
+                    <p class="text-xs text-pink-400 font-bold">一年级科学·单元 6, 7, 8 (40题)</p>
+                </div>
+            </div>
+
+            <!-- 资源显示：初始全为0 -->
+            <div class="flex items-center gap-3 font-black text-xs sm:text-sm">
+                <!-- 金币 -->
+                <div class="bg-amber-100 border-2 border-amber-300 px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-inner">
+                    <i class="fa-solid fa-coins text-amber-500 text-lg"></i>
+                    <span id="coin-count" class="text-amber-800 text-base">0</span>
+                </div>
+                <!-- 获得食材种类 -->
+                <div class="bg-pink-100 border-2 border-pink-300 px-3.5 py-1.5 rounded-2xl flex items-center gap-2 shadow-inner">
+                    <i class="fa-solid fa-pepper-hot text-pink-500 text-lg"></i>
+                    <span id="ingredient-count" class="text-pink-800 text-base">0/12</span>
+                </div>
+                <!-- 音效开/关 -->
+                <button id="btn-sound" onclick="toggleSound()" class="w-9 h-9 rounded-2xl bg-pink-100 hover:bg-pink-200 text-pink-600 flex items-center justify-center transition shadow">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 页面导航栏 -->
+        <nav class="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
+            <button onclick="switchTab('kitchen')" id="tab-kitchen" class="tab-btn bg-pink-500 text-white font-extrabold py-3 rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm sm:text-base transition hover:scale-105">
+                <i class="fa-solid fa-utensils"></i> 魔法披萨厨房
+            </button>
+            <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn bg-white text-pink-600 font-extrabold py-3 rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm sm:text-base hover:bg-pink-100 transition hover:scale-105">
+                <i class="fa-solid fa-graduation-cap"></i> 科学答题（赢食材）
+            </button>
+            <button onclick="switchTab('pantry')" id="tab-pantry" class="tab-btn bg-white text-pink-600 font-extrabold py-3 rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm sm:text-base hover:bg-pink-100 transition hover:scale-105">
+                <i class="fa-solid fa-basket-shopping"></i> 我的食材仓库
+            </button>
+        </nav>
+
+        <!-- 浮动文字特效 -->
+        <div id="float-container" class="fixed inset-0 pointer-events-none z-50"></div>
+
+        <!-- ================= PAGE 1: 披萨厨房 (KITCHEN) ================= -->
+        <section id="page-kitchen" class="page-content block">
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-xl border-4 border-pink-200">
+                
+                <!-- 顾客与订单提示区 -->
+                <div class="bg-gradient-to-r from-pink-100 to-amber-100 p-3 sm:p-4 rounded-2xl border-2 border-pink-300 mb-4 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="text-4xl animate-bounce">🐰</div>
+                        <div>
+                            <div class="font-extrabold text-pink-800 text-xs sm:text-sm">小兔客人的烘焙订单：</div>
+                            <div id="customer-order-text" class="text-xs text-slate-700 mt-0.5">“我想吃放有【芝士】和【草莓】的超级大披萨！”</div>
+                        </div>
+                    </div>
+                    <button onclick="deliverPizza()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-extrabold px-3.5 py-2 rounded-xl text-xs sm:text-sm shadow-md transition transform hover:scale-105 flex items-center gap-1.5">
+                        <i class="fa-solid fa-truck-fast"></i> 上菜卖钱！
+                    </button>
+                </div>
+
+                <!-- 制作核心区域 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    
+                    <!-- 食材选择盒（放置已解锁的食材） -->
+                    <div class="bg-amber-50 rounded-2xl p-3 border-2 border-amber-200 flex flex-col gap-2">
+                        <h3 class="cute-font text-amber-800 text-center text-sm sm:text-base flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-box-open text-amber-500"></i> 可用食材区
+                        </h3>
+                        <p class="text-[11px] text-amber-600 text-center">点击食材摆放到披萨饼上</p>
+                        
+                        <div id="kitchen-topping-selector" class="grid grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1">
+                            <!-- 动态加载已获得的食材按钮 -->
+                        </div>
+                    </div>
+
+                    <!-- 披萨烘焙托盘 -->
+                    <div class="flex flex-col items-center justify-center py-2">
+                        <div id="pizza-board">
+                            <div class="pizza-crust"></div>
+                            <div id="pizza-topping-layer" class="absolute inset-0">
+                                <!-- 摆放的配料 -->
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2">
+                            <button onclick="clearPizza()" class="bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-rose-300">
+                                <i class="fa-solid fa-trash-can mr-1"></i> 清空面饼
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 披萨烘焙工坊状态 -->
+                    <div class="bg-pink-50 rounded-2xl p-4 border-2 border-pink-200 flex flex-col justify-between h-full text-xs">
+                        <div>
+                            <h3 class="cute-font text-pink-700 text-sm sm:text-base mb-2">✨ 披萨小魔法：</h3>
+                            <ul class="space-y-2 text-pink-800 font-semibold">
+                                <li class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-pink-500"></i> 答对 1 题获得 1 种神奇食材。</li>
+                                <li class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-pink-500"></i> 食材越多，披萨卖的金币越多！</li>
+                                <li class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-pink-500"></i> 点击披萨上的配料可以拿掉它。</li>
+                            </ul>
+                        </div>
+                        <button onclick="switchTab('quiz')" class="mt-4 w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-2.5 rounded-xl text-xs shadow transition text-center">
+                            去答题赢取新食材 <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: 科学答题室 (QUIZ) ================= -->
+        <section id="page-quiz" class="page-content hidden">
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-xl border-4 border-purple-200">
+                
+                <div class="flex items-center justify-between mb-4">
+                    <span class="cute-font text-lg text-purple-700">
+                        <i class="fa-solid fa-brain text-purple-500 mr-1"></i> 科学大闯关（赚取食材与金币）
+                    </span>
+                    <span class="bg-purple-100 text-purple-800 font-extrabold text-xs sm:text-sm px-3.5 py-1 rounded-full border border-purple-300">
+                        进度: <span id="quiz-progress-text">1 / 40</span> 题
+                    </span>
+                </div>
+
+                <!-- 答题卡框 -->
+                <div class="bg-gradient-to-b from-purple-50 to-pink-50 rounded-3xl p-4 sm:p-6 border-2 border-purple-200 shadow-inner mb-4">
+                    <div class="mb-3 flex items-center justify-between">
+                        <span id="quiz-unit-badge" class="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-lg shadow">
+                            单元6: 植物
+                        </span>
+                        <span id="quiz-reward-preview" class="bg-amber-400 text-white text-xs font-extrabold px-3 py-1 rounded-lg shadow flex items-center gap-1">
+                            🎁 答对可得: <span id="reward-ingredient-name">【浓郁芝士】</span>
+                        </span>
+                    </div>
+
+                    <!-- 问题标题 -->
+                    <h2 id="quiz-question" class="text-base sm:text-lg font-extrabold text-slate-800 mb-6 leading-relaxed">
+                        题目加载中...
+                    </h2>
+
+                    <!-- 选项列表 -->
+                    <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- 动态生成选项按钮 -->
+                    </div>
+                </div>
+
+                <!-- 答案解析框 -->
+                <div id="quiz-explanation" class="hidden bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 mb-4">
+                    <div class="flex items-start gap-2">
+                        <i id="explain-icon" class="fa-solid fa-circle-check text-emerald-500 text-xl mt-0.5"></i>
+                        <div>
+                            <h4 id="explain-title" class="font-bold text-emerald-800 text-sm">回答正确！</h4>
+                            <p id="explain-text" class="text-xs sm:text-sm text-emerald-700 mt-1">解析信息...</p>
+                        </div>
+                    </div>
+                    <button onclick="nextQuestion()" class="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-2.5 rounded-xl text-sm shadow transition">
+                        下一题 <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- 答题奖励提示 -->
+                <div class="flex items-center justify-around bg-purple-50 rounded-2xl p-3 border border-purple-200 text-xs text-purple-800 font-bold">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-pizza-slice text-orange-500 text-base"></i>
+                        答对解锁: <strong class="text-pink-600">披萨顶级食材</strong>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-coins text-amber-500 text-base"></i>
+                        获得金币: <strong class="text-amber-600">+20 金币</strong>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: 食材仓库 (PANTRY) ================= -->
+        <section id="page-pantry" class="page-content hidden">
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-xl border-4 border-amber-200">
+                <h2 class="cute-font text-xl text-amber-700 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-basket-shopping text-amber-500"></i> 我的披萨食材魔法大仓库
+                </h2>
+
+                <p class="text-xs text-amber-800 font-semibold mb-4 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                    💡 这里展示你在科学知识社答题获得的全部食材！答对更多科学题目就能收集全部 12 种美味食材哦！
+                </p>
+
+                <!-- 食材展示网格 -->
+                <div id="pantry-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                    <!-- 动态渲染所有食材 -->
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Web Audio API 音效模块 -->
+    <script>
+        let soundEnabled = true;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            if (!audioCtx) audioCtx = new AudioContext();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, now);
+                osc.frequency.exponentialRampToValueAtTime(850, now + 0.05);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'topping') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                osc.frequency.setValueAtTime(783.99, now + 0.16);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.setValueAtTime(160, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'sell') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(600, now + 0.08);
+                osc.frequency.setValueAtTime(800, now + 0.16);
+                osc.frequency.setValueAtTime(1000, now + 0.24);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('btn-sound');
+            btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+        }
+    </script>
+
+    <!-- 游戏核心逻辑 -->
+    <script>
+        // 初始资源全部归零
+        let coins = 0;
+
+        // 可解的 12 种食材数据库
+        const ingredientsList = [
+            { id: 'cheese', name: '浓郁芝士', icon: '🧀', count: 0, unlocked: false },
+            { id: 'tomato', name: '鲜美番茄酱', icon: '🍅', count: 0, unlocked: false },
+            { id: 'mushroom', name: '香菇片', icon: '🍄', count: 0, unlocked: false },
+            { id: 'pineapple', name: '甜菠萝块', icon: '🍍', count: 0, unlocked: false },
+            { id: 'strawberry', name: '梦幻草莓', icon: '🍓', count: 0, unlocked: false },
+            { id: 'pepper', name: '彩虹青椒', icon: '🫑', count: 0, unlocked: false },
+            { id: 'sausage', name: '美味香肠', icon: '🌭', count: 0, unlocked: false },
+            { id: 'shrimp', name: '鲜虾仁', icon: '🦐', count: 0, unlocked: false },
+            { id: 'corn', name: '甜玉米粒', icon: '🌽', count: 0, unlocked: false },
+            { id: 'broccoli', name: '鲜嫩西兰花', icon: '🥦', count: 0, unlocked: false },
+            { id: 'bacon', name: '香脆培根', icon: '🥓', count: 0, unlocked: false },
+            { id: 'candy', name: '仙女甜甜圈摆件', icon: '🍩', count: 0, unlocked: false }
+        ];
+
+        // 当前披萨上的配料
+        let currentPizzaToppings = [];
+
+        // 40 道精选一年级科学题目（单元6：植物、单元7：磁铁、单元8：吸水能力）
+        const quizQuestions = [
+            // --- 单元6：植物 (Tumbuhan) ---
+            { unit: "单元6: 植物", q: "植物深深扎在泥土里，用来吸收水分和养分的部位叫什么？", options: ["根", "茎", "叶子"], ans: 0, rewardIdx: 0, explain: "植物的根负责吸收土壤里的水分与养分。" },
+            { unit: "单元6: 植物", q: "支撑植物向上生长，并输送水分的支柱部位是什么？", options: ["茎", "花", "果实"], ans: 0, rewardIdx: 1, explain: "茎支撑着整棵植物，并输送水分和养分。" },
+            { unit: "单元6: 植物", q: "植物利用阳光制作食物的主要部位叫什么？", options: ["叶子", "根", "种子"], ans: 0, rewardIdx: 2, explain: "叶子含有叶绿素，能利用阳光制造食物。" },
+            { unit: "单元6: 植物", q: "鲜艳美丽，能吸引小昆虫帮忙传粉的部位是？", options: ["花", "根", "茎"], ans: 0, rewardIdx: 3, explain: "花朵颜色鲜艳，用来吸引昆虫传粉。" },
+            { unit: "单元6: 植物", q: "花朵谢了之后结出的糖甜部位，里面藏着种子的是什么？", options: ["果实", "泥土", "叶子"], ans: 0, rewardIdx: 4, explain: "果实包裹并保护着里面的种子。" },
+            { unit: "单元6: 植物", q: "大树的茎非常坚硬粗壮，称为什么茎？", options: ["木质茎", "草质茎", "水茎"], ans: 0, rewardIdx: 5, explain: "大树具有坚硬粗壮的木质茎。" },
+            { unit: "单元6: 植物", q: "向日葵和小草的茎柔软容易弯曲，称为什么茎？", options: ["草质茎", "木质茎", "石头茎"], ans: 0, rewardIdx: 6, explain: "小草和向日葵的茎叫草质茎。" },
+            { unit: "单元6: 植物", q: "如果一棵小花完全没有了【根】，它会怎么样？", options: ["无法吸水而枯萎", "长得更快", "开更多花"], ans: 0, rewardIdx: 7, explain: "没有根就无法吸收水分，植物会枯萎死亡。" },
+            { unit: "单元6: 植物", q: "植物生长需要阳光、空气和什么最基本的需求？", options: ["水", "果汁", "牛奶"], ans: 0, rewardIdx: 8, explain: "水、阳光和空气是植物生存的基本需求。" },
+            { unit: "单元6: 植物", q: "西瓜中间黑黑小小的粒，种植后能长出新植物的是？", options: ["种子", "根", "花"], ans: 0, rewardIdx: 9, explain: "种子是新植物生命的开端。" },
+            { unit: "单元6: 植物", q: "叶子大多呈什么颜色？", options: ["绿色", "蓝色", "黑色"], ans: 0, rewardIdx: 10, explain: "叶子因为含有叶绿素，绝大多数呈绿色。" },
+            { unit: "单元6: 植物", q: "向日葵的花朵最喜欢朝向哪边？", options: ["太阳方向", "月亮方向", "风吹方向"], ans: 0, rewardIdx: 11, explain: "向日葵具有向光性，花朵朝向太阳。" },
+            { unit: "单元6: 植物", q: "吃苹果时，我们吃的是苹果树的哪一部分？", options: ["果实", "根", "叶子"], ans: 0, rewardIdx: 0, explain: "苹果是苹果树的果实。" },
+
+            // --- 单元7：磁铁 (Magnet) ---
+            { unit: "单元7: 磁铁", q: "直直长长像一根棒子的磁铁叫作什么？", options: ["条形/棒形磁铁", "U形磁铁", "圆盘形磁铁"], ans: 0, rewardIdx: 1, explain: "直棒状的磁铁叫条形磁铁或棒形磁铁。" },
+            { unit: "单元7: 磁铁", q: "弯曲得像英文字母“U”一样的磁铁叫作什么？", options: ["U形磁铁", "环形磁铁", "球形磁铁"], ans: 0, rewardIdx: 2, explain: "形状像字母U的磁铁叫U形磁铁。" },
+            { unit: "单元7: 磁铁", q: "弯曲得像马蹄铁一样的磁铁叫作什么？", options: ["蹄形磁铁", "条形磁铁", "圆盘形磁铁"], ans: 0, rewardIdx: 3, explain: "开口比较近的弯曲磁铁叫蹄形磁铁。" },
+            { unit: "单元7: 磁铁", q: "扁扁圆圆像硬币一样的磁铁叫作什么？", options: ["圆盘形磁铁", "棒形磁铁", "U形磁铁"], ans: 0, rewardIdx: 4, explain: "圆饼状的磁铁叫圆盘形磁铁。" },
+            { unit: "单元7: 磁铁", q: "磁铁能够吸引由什么材料制成的物品？", options: ["铁（铁制品）", "塑料", "木头"], ans: 0, rewardIdx: 5, explain: "磁铁只能吸引铁制品。" },
+            { unit: "单元7: 磁铁", q: "下列哪种物品会被磁铁吸住？", options: ["铁回形针", "塑料尺", "木橡皮擦"], ans: 0, rewardIdx: 6, explain: "铁回形针是铁制品，会被磁铁吸引。" },
+            { unit: "单元7: 磁铁", q: "磁铁【不能】吸引下列哪种物品？", options: ["木制铅笔", "铁钉", "铁钥匙"], ans: 0, rewardIdx: 7, explain: "木头不是铁制品，磁铁无法吸引。" },
+            { unit: "单元7: 磁铁", q: "磁铁有两个极，分别叫作什么？", options: ["北极(N) 和 南极(S)", "东极 和 西极", "左极 和 右极"], ans: 0, rewardIdx: 8, explain: "磁铁有 N极（北极）和 S极（南极）。" },
+            { unit: "单元7: 磁铁", q: "当两个磁铁【相同】的磁极（如 N 和 N）靠近时，会怎样？", options: ["互相排斥（推开）", "互相吸引（吸住）", "没有变化"], ans: 0, rewardIdx: 9, explain: "同性相斥！相同的磁极靠近会互相排斥。" },
+            { unit: "单元7: 磁铁", q: "当两个磁铁【不相同】的磁极（如 N 和 S）靠近时，会怎样？", options: ["互相吸引（吸住）", "互相排斥（推开）", "会变小"], ans: 0, rewardIdx: 10, explain: "异性相吸！不同的磁极靠近会紧紧吸在一起。" },
+            { unit: "单元7: 磁铁", q: "冰箱门能自动紧紧关上，是因为里面隐藏了什么？", options: ["磁铁", "胶水", "弹簧"], ans: 0, rewardIdx: 11, explain: "冰箱门封条里安装了磁铁。" },
+            { unit: "单元7: 磁铁", q: "磁铁的哪一部分磁力最强？", options: ["两端的磁极", "中间部位", "到处都一样"], ans: 0, rewardIdx: 0, explain: "磁铁两端的磁极（N极和S极）磁力最强！" },
+            { unit: "单元7: 磁铁", q: "文具盒上的磁扣能吸住，利用了磁铁的什么特性？", options: ["吸引铁制品", "能发光", "能吸水"], ans: 0, rewardIdx: 1, explain: "利用磁铁吸住铁制扣子。" },
+
+            // --- 单元8：吸水能力 (Keupayaan Bahan Menyerap Air) ---
+            { unit: "单元8: 吸水能力", q: "洗完手后用毛巾擦手，水分被毛巾吸干了。毛巾属于？", options: ["能吸水的材料", "不能吸水的材料", "会发光的材料"], ans: 0, rewardIdx: 2, explain: "棉布毛巾具有吸水能力。" },
+            { unit: "单元8: 吸水能力", q: "下雨天穿的【塑料雨衣】会让水渗进来吗？", options: ["不会，塑料不能吸水", "会，塑料吸水很强", "不确定"], ans: 0, rewardIdx: 3, explain: "塑料不能吸水，所以用来做雨衣防雨。" },
+            { unit: "单元8: 吸水能力", q: "桌子上有水打翻了，用下列哪种物品能最快把水吸干？", options: ["面巾纸/海绵", "塑料尺", "铁匙羹"], ans: 0, rewardIdx: 4, explain: "面巾纸和海绵具有极强的吸水能力。" },
+            { unit: "单元8: 吸水能力", q: "下列哪种材料是【不能吸水】的？", options: ["塑料和金属", "棉布", "纸张"], ans: 0, rewardIdx: 5, explain: "塑料和金属都是不能吸水的材料。" },
+            { unit: "单元8: 吸水能力", q: "下列哪种材料是【能吸水】的？", options: ["棉布和纸张", "玻璃", "塑料"], ans: 0, rewardIdx: 6, explain: "棉布和纸张具有吸收水分的能力。" },
+            { unit: "单元8: 吸水能力", q: "用铁做成的水勺用来盛水，水会渗出来吗？", options: ["不会，金属不能吸水也不透水", "会，金属会吸水", "会蒸发"], ans: 0, rewardIdx: 7, explain: "金属不吸水，所以适合做盛水容器。" },
+            { unit: "单元8: 吸水能力", q: "比较吸水能力：【面巾纸】和【普通书写纸】，谁的吸水能力更强？", options: ["面巾纸", "普通书写纸", "两者一样"], ans: 0, rewardIdx: 8, explain: "面巾纸质地疏松，吸水能力比普通书写纸强。" },
+            { unit: "单元8: 吸水能力", q: "我们在雨天用的【雨伞】，伞面是用什么材料做的？", options: ["不能吸水的防水布/塑料", "容易吸水的棉布", "纸张"], ans: 0, rewardIdx: 9, explain: "雨伞使用不吸水的材料来挡雨。" },
+            { unit: "单元8: 吸水能力", q: "妈妈洗完碗后用海绵擦桌子，海绵能吸水是因为？", options: ["海绵是能吸水的材料", "海绵是金属", "海绵是塑料"], ans: 0, rewardIdx: 10, explain: "海绵孔隙多，是吸水能力很强的材料。" },
+            { unit: "单元8: 吸水能力", q: "玻璃杯装水不会漏出来，因为玻璃是？", options: ["不能吸水的材料", "非常吸水的材料", "柔软的材料"], ans: 0, rewardIdx: 11, explain: "玻璃不能吸水也不透水。" },
+            { unit: "单元8: 吸水能力", q: "把棉布手帕浸入水里，手帕会变湿，说明棉布？", options: ["能吸水", "不能吸水", "会溶解"], ans: 0, rewardIdx: 0, explain: "棉布能吸收水分。" },
+            { unit: "单元8: 吸水能力", q: "下列哪组物品全部属于【不能吸水】的？", options: ["塑料钉、玻璃珠、铁扣", "棉花、纸巾、手帕", "海绵、毛巾、报纸"], ans: 0, rewardIdx: 1, explain: "塑料、玻璃和铁都属于不能吸水的材料。" },
+            { unit: "单元8: 吸水能力", q: "游泳时戴的【硅胶/塑料游泳帽】主要是为了？", options: ["防止头发被水浸湿（不吸水）", "吸收池水", "增加重量"], ans: 0, rewardIdx: 2, explain: "硅胶不吸水，能防止头发变湿。" },
+            { unit: "单元8: 吸水能力", q: "如果用【纸张】来做雨衣，会发生什么事？", options: ["纸张吸水变软湿透破裂", "非常防水", "变成金属"], ans: 0, rewardIdx: 3, explain: "纸张吸水后容易变软破裂，不适合做雨衣。" }
+        ];
+
+        let currentQuizIndex = 0;
+
+        // 初始化
+        window.onload = function() {
+            loadQuestion(0);
+            updateUI();
+            renderKitchenToppings();
+            renderPantry();
+        };
+
+        // 更新 UI 资源界面
+        function updateUI() {
+            document.getElementById('coin-count').innerText = coins;
+
+            const unlockedCount = ingredientsList.filter(i => i.unlocked).length;
+            document.getElementById('ingredient-count').innerText = `${unlockedCount}/12`;
+        }
+
+        // 切换标签页
+        function switchTab(tab) {
+            playSound('click');
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-pink-500', 'text-white');
+                btn.classList.add('bg-white', 'text-pink-600');
+            });
+
+            document.getElementById(`page-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.remove('bg-white', 'text-pink-600');
+            activeBtn.classList.add('bg-pink-500', 'text-white');
+
+            if (tab === 'kitchen') {
+                renderKitchenToppings();
+            } else if (tab === 'pantry') {
+                renderPantry();
+            }
+        }
+
+        // ================= 答题模块 =================
+        function loadQuestion(index) {
+            if (index >= quizQuestions.length) index = 0;
+            currentQuizIndex = index;
+            const q = quizQuestions[index];
+
+            document.getElementById('quiz-progress-text').innerText = `${index + 1} / ${quizQuestions.length}`;
+            document.getElementById('quiz-unit-badge').innerText = q.unit;
+            document.getElementById('quiz-question').innerText = q.q;
+
+            const targetIngredient = ingredientsList[q.rewardIdx];
+            document.getElementById('reward-ingredient-name').innerText = `【${targetIngredient.icon} ${targetIngredient.name}】`;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full bg-white hover:bg-purple-100 text-slate-800 font-extrabold p-3.5 sm:p-4 rounded-2xl border-2 border-purple-200 shadow-sm text-left text-sm sm:text-base transition flex items-center gap-2.5';
+                btn.innerHTML = `<span class="w-7 h-7 rounded-xl bg-purple-200 text-purple-700 text-xs flex items-center justify-center font-black">${String.fromCharCode(65 + optIdx)}</span> ${opt}`;
+                btn.onclick = () => checkAnswer(optIdx);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-explanation').classList.add('hidden');
+        }
+
+        function checkAnswer(selectedOpt) {
+            const q = quizQuestions[currentQuizIndex];
+            const explainBox = document.getElementById('quiz-explanation');
+            const explainTitle = document.getElementById('explain-title');
+            const explainText = document.getElementById('explain-text');
+
+            if (selectedOpt === q.ans) {
+                playSound('correct');
+                coins += 20;
+
+                const reward = ingredientsList[q.rewardIdx];
+                reward.unlocked = true;
+                reward.count += 1;
+
+                explainTitle.innerText = `🎉 答对啦！解锁食材：${reward.icon} ${reward.name}！`;
+                explainTitle.className = "font-bold text-emerald-800 text-sm";
+                explainBox.className = "bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 mb-4";
+                explainText.innerText = `${q.explain} (获得食材: ${reward.name} x1, 金币 +20)`;
+
+                updateUI();
+            } else {
+                playSound('wrong');
+                explainTitle.innerText = "❌ 差一点点，加油哦！";
+                explainTitle.className = "font-bold text-rose-800 text-sm";
+                explainBox.className = "bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 mb-4";
+                explainText.innerText = `正确答案是: ${q.options[q.ans]}。解析: ${q.explain}`;
+            }
+
+            explainBox.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            loadQuestion(currentQuizIndex + 1);
+        }
+
+        // ================= 披萨制作与烘焙模块 =================
+        function renderKitchenToppings() {
+            const container = document.getElementById('kitchen-topping-selector');
+            container.innerHTML = '';
+
+            const available = ingredientsList.filter(i => i.unlocked && i.count > 0);
+
+            if (available.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center text-xs text-amber-700 py-6 font-bold">尚无食材，快去【科学答题】赢取食材吧！</div>';
+                return;
+            }
+
+            available.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-white hover:bg-amber-100 border-2 border-amber-300 rounded-xl p-2 flex flex-col items-center shadow-sm transition active:scale-95';
+                btn.innerHTML = `
+                    <span class="text-2xl">${item.icon}</span>
+                    <span class="text-[10px] font-bold text-amber-900 truncate w-full text-center mt-0.5">${item.name}</span>
+                    <span class="text-[9px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-black mt-0.5">x${item.count}</span>
+                `;
+                btn.onclick = () => addToppingToPizza(item.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function addToppingToPizza(ingredientId) {
+            const item = ingredientsList.find(i => i.id === ingredientId);
+            if (!item || item.count <= 0) return;
+
+            item.count -= 1;
+            playSound('topping');
+
+            // 随机在披萨盘圆圈内算位置
+            const radius = 90; // px
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            const x = 140 + dist * Math.cos(angle);
+            const y = 140 + dist * Math.sin(angle);
+
+            const toppingObj = {
+                id: Date.now() + Math.random(),
+                ingredientId: item.id,
+                icon: item.icon,
+                x: x,
+                y: y
+            };
+
+            currentPizzaToppings.push(toppingObj);
+            renderPizzaBoard();
+            renderKitchenToppings();
+        }
+
+        function renderPizzaBoard() {
+            const layer = document.getElementById('pizza-topping-layer');
+            layer.innerHTML = '';
+
+            currentPizzaToppings.forEach(top => {
+                const el = document.createElement('div');
+                el.className = 'topping-on-pizza';
+                el.style.left = `${top.x}px`;
+                el.style.top = `${top.y}px`;
+                el.innerText = top.icon;
+                el.title = '点击拿掉食材';
+                el.onclick = () => removeToppingFromPizza(top.id);
+                layer.appendChild(el);
+            });
+        }
+
+        function removeToppingFromPizza(toppingId) {
+            const idx = currentPizzaToppings.findIndex(t => t.id === toppingId);
+            if (idx !== -1) {
+                const removed = currentPizzaToppings[idx];
+                const item = ingredientsList.find(i => i.id === removed.ingredientId);
+                if (item) item.count += 1;
+
+                currentPizzaToppings.splice(idx, 1);
+                playSound('click');
+                renderPizzaBoard();
+                renderKitchenToppings();
+            }
+        }
+
+        function clearPizza() {
+            if (currentPizzaToppings.length === 0) return;
+            currentPizzaToppings.forEach(top => {
+                const item = ingredientsList.find(i => i.id === top.ingredientId);
+                if (item) item.count += 1;
+            });
+            currentPizzaToppings = [];
+            playSound('click');
+            renderPizzaBoard();
+            renderKitchenToppings();
+        }
+
+        function deliverPizza() {
+            if (currentPizzaToppings.length === 0) {
+                playSound('wrong');
+                showFloatText('披萨上还没有配料呢！', window.innerWidth/2, window.innerHeight/2, 'text-rose-500');
+                return;
+            }
+
+            playSound('sell');
+            const earnedCoins = currentPizzaToppings.length * 25 + 30;
+            coins += earnedCoins;
+
+            showFloatText(`售出成功！赚取 +${earnedCoins} 金币！`, window.innerWidth/2, window.innerHeight/2, 'text-emerald-600');
+
+            currentPizzaToppings = [];
+            renderPizzaBoard();
+            updateUI();
+
+            // 换下一个小动物顾客
+            const animals = ['🐱 小猫咪', '🐶 小狗勾', '🐻 小熊熊', '🦄 独角兽', '🦊 小狐狸'];
+            const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+            document.getElementById('customer-order-text').innerText = `“真美味！下一个客人【${randomAnimal}】也想吃披萨啦！”`;
+        }
+
+        // ================= 食材仓库渲染 =================
+        function renderPantry() {
+            const grid = document.getElementById('pantry-grid');
+            grid.innerHTML = '';
+
+            ingredientsList.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `rounded-2xl p-3 border-2 ${item.unlocked ? 'bg-amber-50 border-amber-300' : 'bg-slate-100 border-slate-200 opacity-60'} flex flex-col items-center shadow-sm text-center relative overflow-hidden`;
+                card.innerHTML = `
+                    <div class="text-4xl mb-1">${item.unlocked ? item.icon : '🔒'}</div>
+                    <h3 class="font-extrabold ${item.unlocked ? 'text-amber-900' : 'text-slate-500'} text-xs mb-1">${item.name}</h3>
+                    <div class="text-[10px] font-bold ${item.unlocked ? 'bg-amber-200 text-amber-800' : 'bg-slate-200 text-slate-600'} px-2 py-0.5 rounded-full">
+                        ${item.unlocked ? `剩余库存: ${item.count} 个` : '未解锁'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 飘字特效
+        function showFloatText(text, x, y, colorClass = 'text-amber-500') {
+            const container = document.getElementById('float-container');
+            const el = document.createElement('div');
+            el.className = `absolute font-black text-sm sm:text-base ${colorClass} float-text pointer-events-none drop-shadow-md z-50`;
+            el.style.left = `${x || window.innerWidth/2}px`;
+            el.style.top = `${y || window.innerHeight/2}px`;
+            el.innerText = text;
+
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+    </script>
+</body>
+</html>
